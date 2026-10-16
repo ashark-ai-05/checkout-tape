@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>checkout-tape</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--bg:#0b0d12;--panel:#12151d;--line:#232836;--fg:#e6e9f0;--dim:#8a93a6;--acp:#7c9cff;--ucp:#4fd1a5;--x402:#f5b14c;--mpp:#c58bff;--unknown:#8a93a6;--red:#ff4d5e}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace}
+header{display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:2}
+h1{font-size:15px;margin:0;letter-spacing:.5px}h1 b{color:var(--red)}
+.pill{padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--dim)}
+.pill.bad{color:#fff;background:var(--red);border-color:var(--red)}
+button{background:#1b2030;color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:5px 10px;font:inherit;cursor:pointer}button:hover{border-color:var(--acp)}
+.spacer{flex:1}
+main{display:grid;grid-template-columns:1fr 380px;height:calc(100vh - 50px)}
+#lanes{overflow:auto;padding:0 18px 40px}
+.head{display:grid;grid-template-columns:44px repeat(3,1fr);position:sticky;top:0;background:var(--bg);padding:12px 0 8px;z-index:1;border-bottom:1px solid var(--line)}
+.head div{text-align:center;color:var(--dim);text-transform:uppercase;font-size:11px;letter-spacing:1.5px}
+.head div span{display:inline-block;padding:4px 12px;border:1px solid var(--line);border-radius:6px;color:var(--fg)}
+.row{display:grid;grid-template-columns:44px repeat(3,1fr);position:relative;min-height:58px;cursor:pointer;border-radius:8px;animation:in .35s ease}
+.row:hover{background:#ffffff06}.row.sel{background:#7c9cff14}
+.row .n{color:var(--dim);padding-top:20px;text-align:right;padding-right:8px}
+.row::before{content:"";position:absolute;left:44px;right:0;top:0;bottom:0;background:linear-gradient(90deg,transparent calc(16.66% - .5px),var(--line) calc(16.66% - .5px),var(--line) calc(16.66% + .5px),transparent calc(16.66% + .5px),transparent calc(50% - .5px),var(--line) calc(50% - .5px),var(--line) calc(50% + .5px),transparent calc(50% + .5px),transparent calc(83.33% - .5px),var(--line) calc(83.33% - .5px),var(--line) calc(83.33% + .5px),transparent calc(83.33% + .5px));pointer-events:none}
+.arrow{position:absolute;top:30px;height:2px;background:currentColor}
+.arrow::after{content:"";position:absolute;top:-5px;border:6px solid transparent}
+.arrow.r::after{right:-2px;border-left-color:currentColor;border-right:0}.arrow.l::after{left:-2px;border-right-color:currentColor;border-left:0}
+.label{position:absolute;top:6px;transform:translateX(-50%);white-space:nowrap;font-size:12px;background:var(--bg);padding:0 6px;border-radius:4px}
+.label .p{font-weight:700;text-transform:uppercase;font-size:10px;margin-right:6px}
+.amt{position:absolute;top:36px;transform:translateX(-50%);font-size:11px;color:var(--dim)}
+.row.bad .label{color:#fff;background:var(--red)}.row.bad .amt{color:var(--red);font-weight:700}
+.row.bad{animation:in .35s ease,flash 1s ease-in-out 0s 4;box-shadow:inset 3px 0 var(--red)}
+@keyframes flash{0%,100%{background:transparent}50%{background:#ff4d5e33}}
+@keyframes in{from{opacity:0;transform:translateY(-6px)}to{opacity:1}}
+aside{border-left:1px solid var(--line);background:var(--panel);overflow:auto;padding:14px}
+aside h2{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin:14px 0 6px}
+.an{border:1px solid var(--red);background:#ff4d5e1a;border-radius:8px;padding:8px 10px;margin:6px 0}
+.an b{color:var(--red)}
+pre{white-space:pre-wrap;word-break:break-all;background:#0b0d12;border:1px solid var(--line);border-radius:6px;padding:8px;font-size:11px;max-height:300px;overflow:auto}
+.empty{color:var(--dim);padding:40px;text-align:center}
+.diff td{padding:3px 6px;border-bottom:1px solid var(--line)}.diff .changed{color:var(--x402)}.diff .added{color:var(--ucp)}.diff .removed{color:var(--red)}
+.legend span{margin-right:10px}.legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px}
+</style></head><body>
+<header><h1>checkout<b>·</b>tape</h1><span class="pill">TEST MODE · secrets redacted</span>
+<span class="legend"><span><i style="background:var(--acp)"></i>ACP</span><span><i style="background:var(--ucp)"></i>UCP</span><span><i style="background:var(--x402)"></i>x402</span><span><i style="background:var(--mpp)"></i>MPP</span></span>
+<span class="spacer"></span><span id="count" class="pill">0 events</span><span id="bad" class="pill">0 anomalies</span>
+<button id="replay">▶ Replay</button><button id="dl">⤓ Tape</button></header>
+<main><section id="lanes"><div class="head"><div></div><div><span>Agent</span></div><div><span>Merchant</span></div><div><span>Payment provider</span></div></div><div id="rows"><div class="empty">Waiting for traffic… point your agent at the proxy.</div></div></section>
+<aside id="side"><h2>Anomalies</h2><div id="anoms"><div style="color:var(--dim)">None yet.</div></div><h2>Selected step</h2><div id="detail" style="color:var(--dim)">Click a step.</div><div id="diff"></div></aside></main>
+<script>
+const COL={agent:0,merchant:1,psp:2};let events=[],sel=null;
+const $=s=>document.querySelector(s);
+const money=(a,c)=>a==null?"":c==="usdc-atomic"?(a/1e6).toFixed(6)+" USDC":(c==="usd"&&a<100?a+"¢ USD":(a/100).toFixed(2)+" "+(c||"").toUpperCase());
+const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+function rowEl(ev){
+  const r=document.createElement("div");r.className="row"+(ev.anomalies.length?" bad":"");r.dataset.id=ev.id;
+  const a=COL[ev.from],b=COL[ev.to],lo=Math.min(a,b),hi=Math.max(a,b);
+  const pct=i=>(i*2+1)/6*100;const left=pct(lo),right=pct(hi),mid=(left+right)/2;
+  const color=`var(--${ev.protocol})`;
+  r.innerHTML=`<div class="n">#${ev.id}</div><div></div><div></div><div></div>
+  <div class="arrow ${b>a?"r":"l"}" style="color:${color};left:calc(44px + (100% - 44px)*${left/100});width:calc((100% - 44px)*${(right-left)/100})"></div>
+  <div class="label" style="left:calc(44px + (100% - 44px)*${mid/100})"><span class="p" style="color:${ev.anomalies.length?"#fff":color}">${ev.protocol}</span>${esc(ev.step)}${ev.status?` · ${esc(ev.status)}`:""}</div>
+  <div class="amt" style="left:calc(44px + (100% - 44px)*${mid/100})">${ev.anomalies.length?"⚠ ":""}${esc(money(ev.amount,ev.currency))}${ev.role&&ev.role!=="info"?` · ${ev.role}`:""}</div>`;
+  r.onclick=()=>show(ev);return r;}
+function show(ev){sel=ev.id;document.querySelectorAll(".row").forEach(x=>x.classList.toggle("sel",x.dataset.id==ev.id));
+  const x=ev.exchange;$("#detail").innerHTML=`<div>${esc(ev.summary)}</div>${ev.anomalies.map(a=>`<div class="an"><b>${a.code}</b><br>${esc(a.message)}</div>`).join("")}
+  <h2>Request</h2><pre>${esc(x.method+" "+x.path+"\n"+JSON.stringify(x.reqHeaders,null,1)+"\n\n"+JSON.stringify(x.reqBody??null,null,2))}</pre>
+  <h2>Response ${x.status} · ${x.durationMs}ms</h2><pre>${esc(JSON.stringify(x.resHeaders,null,1)+"\n\n"+JSON.stringify(x.resBody??null,null,2))}</pre>`;}
+function add(ev){if(!events.length)$("#rows").innerHTML="";events.push(ev);$("#rows").appendChild(rowEl(ev));stats();if(ev.anomalies.length&&sel==null)show(ev);}
+function stats(){$("#count").textContent=events.length+" events";const an=events.flatMap(e=>e.anomalies.map(a=>({...a,id:e.id})));
+  $("#bad").textContent=an.length+" anomalies";$("#bad").classList.toggle("bad",an.length>0);
+  $("#anoms").innerHTML=an.length?an.map(a=>`<div class="an" style="cursor:pointer" onclick="show(events.find(e=>e.id==${a.id}))"><b>#${a.id} ${a.code}</b><br>${esc(a.message)}</div>`).join(""):`<div style="color:var(--dim)">None yet.</div>`;}
+async function replay(){const all=events.slice();events=[];$("#rows").innerHTML="";stats();for(const e of all){add(e);await new Promise(r=>setTimeout(r,450));}}
+$("#replay").onclick=replay;
+$("#dl").onclick=()=>{const b=new Blob([events.map(e=>JSON.stringify(e)).join("\n")+"\n"],{type:"application/x-ndjson"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="checkout-tape.jsonl";a.click();};
+const Q=new URLSearchParams(location.search);
+if(Q.has("static"))fetch("/api/tape").then(r=>r.json()).then(a=>a.forEach(add));else new EventSource("/events").onmessage=m=>add(JSON.parse(m.data));
+if(new URLSearchParams(location.search).has("diff"))fetch("/api/diff").then(r=>r.json()).then(rows=>{if(!rows)return;
+  $("#diff").innerHTML=`<h2>Diff A → B (this timeline is B)</h2><table class="diff">${rows.map(r=>{const e=r.a||r.b;return `<tr class="${r.kind}"><td>${{same:"=",changed:"~",added:"+",removed:"-"}[r.kind]}</td><td>${e.protocol} ${esc(e.step)}</td><td>${esc(r.notes.join("; "))}</td></tr>`}).join("")}</table>`;});
+</script></body></html>

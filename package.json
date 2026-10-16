@@ -1,0 +1,30 @@
+{
+  "name": "checkout-tape",
+  "version": "0.1.0",
+  "description": "Wireshark for agent checkouts: a local proxy + live timeline for ACP, UCP, x402 and Stripe MPP traffic, with anomaly flags.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "checkout-tape": "bin/checkout-tape.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "ui",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "test": "npm run build && node --test dist/test/*.test.js",
+    "demo": "npm run build && node bin/checkout-tape.js demo",
+    "prepare": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "^5.9.3"
+  }
+}
