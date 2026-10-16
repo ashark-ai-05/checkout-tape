@@ -21,7 +21,7 @@
     "build": "tsc -p .",
     "test": "npm run build && node --test dist/test/*.test.js",
     "demo": "npm run build && node bin/checkout-tape.js demo",
-    "prepare": "npm run build"
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",
