@@ -17,7 +17,7 @@ npx github:ashark-ai-05/checkout-tape demo
 # open http://localhost:8403
 ```
 
-Needs Node ≥20 and npm ≥10. The old Debian npm 9.2 fails with "could not determine executable to run". It isn't on npm yet. Once it's published, this becomes `npx checkout-tape demo`.
+Needs Node ≥20 and npm ≥10 (`npx github:` requires npm ≥10; the old Debian npm 9.2 fails with "could not determine executable to run"). This package is not published to the npm registry yet — once it is, the install becomes `npx checkout-tape demo`.
 
 Record your own agent:
 
